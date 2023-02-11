@@ -30,6 +30,12 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = "authentification.User"
 # Application definition
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'authentification.jwt.JWTAuthentification',
+    ]
+}
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
