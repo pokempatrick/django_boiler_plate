@@ -3,12 +3,11 @@ from rest_framework.generics import GenericAPIView
 from rest_framework import response, status, permissions
 from todos.models import Todos
 from todos.serializer import TodoSerilizer
-from rest_framework.settings import api_settings
-
 # Create your views here.
 
 
 class TodoAPIView(GenericAPIView):
+
     permission_classes = (permissions.IsAuthenticated,)
     # authentication_classes = ()
     serializer_class = TodoSerilizer
@@ -29,15 +28,12 @@ class TodoAPIView(GenericAPIView):
 
             return response.Response(serializer.data)
 
-        todos = Todos.objects.filter(owner=self.request.user)
-        if request.query_params and request.query_params["limit"]:
-            limit = request.query_params["limit"]
-        if request.query_params and request.query_params["page"]:
-            page = request.query_params["page"]
-
-        serializer = self.serializer_class(todos, many=True)
-
-        return response.Response(serializer.data)
+        # get a list of todos
+        self.queryset = Todos.objects.filter(owner=self.request.user)
+        page = self.paginate_queryset(self.queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
     def put(self, request, id=None):
         todo = get_object_or_404(Todos, id=id)
