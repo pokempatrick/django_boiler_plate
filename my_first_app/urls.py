@@ -46,4 +46,5 @@ urlpatterns = [
     path('budget/', include('budget.urls')),
     path('api/auth/', include('authentification.urls')),
     path('api/todo/', include('todos.urls')),
+    path('api/', include('article.urls')),
 ]

@@ -1,5 +1,5 @@
 [run]
-source=authentification/,todos/,members/,budget/,
+source=authentification/,todos/,members/,budget/,article/,
 omit = 
     env
     */migrations/*
