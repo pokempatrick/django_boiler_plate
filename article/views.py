@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from rest_framework import viewsets, filters, permissions, response, status
+from rest_framework import viewsets, filters, permissions, response, status, generics
 from django.shortcuts import get_object_or_404
-from .models import Articles
-from .serializer import ArticleSerializer
+from .models import Articles, Picture
+from .serializer import ArticleSerializer, PictureSerializer
 from .permission import IsAuthenficatedOnly, IsArticleOwnerOrReadOnly
 
 
@@ -29,7 +29,14 @@ class ArticleViewSet(viewsets.ModelViewSet):
         article = get_object_or_404(Articles, id=pk)
         serializer = self.serializer_class(article, data=request.data)
         if serializer.is_valid():
-            serializer.save(added_by=self.request.user)
+            serializer.save(updated_by=self.request.user)
             return response.Response(serializer.data, status=status.HTTP_200_OK)
 
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PictureView(generics.ListCreateAPIView):
+    permission_classes = ()
+    authentication_classes = ()
+    queryset = Picture.objects.all()
+    serializer_class = PictureSerializer
