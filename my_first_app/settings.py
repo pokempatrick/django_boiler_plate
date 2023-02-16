@@ -44,7 +44,14 @@ REST_FRAMEWORK = {
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'mediafiles')
 
 # URL used to access the media
-MEDIA_URL = '/media/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'gestiontransfo@gmail.com'
+EMAIL_HOST_PASSWORD = 'hrohoorirfgcxyes'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 
 INSTALLED_APPS = [
     'django.contrib.admin',

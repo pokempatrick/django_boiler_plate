@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 import json
 from django.shortcuts import get_object_or_404
-from article.models import Articles
+from article.models import Articles, Picture
 from authentification.models import User
 
 
@@ -13,6 +13,7 @@ class TestViews(TestCase):
         self.client = Client()
         self.login_url = reverse('login')
         self.article_url = reverse('articles-list')
+        self.picture_url = reverse('picture')
 
         # creation d'un utilisateur
         self.user = User.objects.create_user(
@@ -38,6 +39,11 @@ class TestViews(TestCase):
             code="1515",
             vendor="propos",
             description="Calculatrice scientifique"
+        )
+
+        # create a new picture
+        self.picture = Picture.objects.create(
+            title="l'amour c'est"
         )
 
     def test_create_article(self):
@@ -130,3 +136,21 @@ class TestViews(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+
+    def test_create_picture(self):
+        response = self.client.post(
+            self.picture_url,
+            json.dumps({
+                "title": "Jesus christ"
+            }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+    def test_get_all_pictures(self):
+        response = self.client.get(
+            self.picture_url,
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+        )
+        self.assertEqual(response.status_code, 200)

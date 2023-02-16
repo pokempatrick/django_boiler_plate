@@ -1,4 +1,7 @@
 from django.db import models
+import os
+import uuid
+from django.core.validators import FileExtensionValidator
 from helpers.models import TrakingModel
 from article.validators import validate_file_size
 from authentification.models import User
@@ -23,9 +26,21 @@ class Articles(TrakingModel):
 
 class Picture(TrakingModel):
 
+    def get_file_path(instance, filename):
+        ext = filename.split('.')[-1]
+        filename = "%s.%s" % (uuid.uuid4(), ext)
+        return os.path.join('documents/', filename)
+
     title = models.CharField(max_length=25)
     file = models.ImageField(
-        upload_to='documents', max_length=100, blank=True, validators=[validate_file_size])
+        upload_to=get_file_path,
+        max_length=100, blank=True,
+        validators=[validate_file_size,
+                    FileExtensionValidator(['jpg', 'png', 'jpeg'])]
+    )
+
+    article = models.ForeignKey(
+        Articles, related_name='images', on_delete=models.CASCADE, blank=True, null=True)
 
     def __unicode__(self):
         return self.title
