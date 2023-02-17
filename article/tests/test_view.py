@@ -11,7 +11,6 @@ class TestViews(TestCase):
     def setUp(self):
 
         self.client = Client()
-        self.login_url = reverse('login')
         self.article_url = reverse('articles-list')
         self.picture_url = reverse('picture')
 
