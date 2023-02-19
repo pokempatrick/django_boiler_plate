@@ -169,6 +169,18 @@ class TestUserViews(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_update_user_by_manager_role(self):
+        response = self.client.put(
+            self.users_url+f'{self.user2.id}/',
+            json.dumps({
+                "role_name": "ROLE_ADMIN"
+            }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_get_user(self):
         response = self.client.get(
             self.users_url+f'{self.user2.id}/',
