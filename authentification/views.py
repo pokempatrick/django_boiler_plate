@@ -8,8 +8,9 @@ import random
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
+from rest_framework.decorators import action
 from authentification.models import User
-from helpers.permission import HasManagerRole
+from helpers.permission import HasManagerRole, IsUserOwner
 from helpers.utils import recover_email, check_token
 
 # Create your views here.
@@ -150,3 +151,18 @@ class UserViewSet(viewsets.ModelViewSet):
             return response.Response(serializer.data, status=status.HTTP_200_OK)
 
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['put'])
+    def set_password(self, request, pk=None):
+        """ change password for authenticate user """
+
+        self.permission_classes = (IsUserOwner,)
+        user = self.get_object()
+        serializer = RegisterSerilizer(data=request.data, partial=True)
+        if serializer.is_valid():
+            user.set_password(serializer.validated_data['password'])
+            user.save()
+            return response.Response({'status': 'password updated'})
+        else:
+            return response.Response(serializer.errors,
+                                     status=status.HTTP_400_BAD_REQUEST)

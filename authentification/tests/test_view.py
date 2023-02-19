@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 import json
 import jwt
+from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from authentification.models import User
 from datetime import datetime, timedelta
@@ -29,7 +30,7 @@ class TestViews(TestCase):
                 'username': self.user.username,
                 'email': self.user.email,
                 'user_id': self.user.id,
-                'code': 1253,
+                'code': make_password("1234"),
                 'exp': datetime.utcnow()+timedelta(hours=1)
             }, settings.SECRET_KEY2, algorithm='HS256')
 
@@ -96,11 +97,23 @@ class TestViews(TestCase):
 
         response = self.client.post(
             self.email_code_url,
-            json.dumps({"code": 1243, }),
+            json.dumps({"code": 1245, }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.recover_token}'},
             content_type="application/json"
         )
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_code_email_checking(self):
+
+        response = self.client.post(
+            self.email_code_url,
+            json.dumps({"code": 1234, }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.recover_token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_user(self):
         response = self.client.get(
@@ -207,3 +220,27 @@ class TestUserViews(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_update_his_own_password(self):
+        response = self.client.put(
+            self.users_url+f'{self.user2.id}/set_password/',
+            json.dumps({
+                "password": "123456"
+            }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user2.token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_somebody_else_password(self):
+        response = self.client.put(
+            self.users_url+f'{self.user2.id}/set_password/',
+            json.dumps({
+                "password": "123456"
+            }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
