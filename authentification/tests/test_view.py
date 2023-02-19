@@ -18,7 +18,6 @@ class TestViews(TestCase):
         self.user_url = reverse('user')
         self.email_sign_url = reverse('email_sign')
         self.email_code_url = reverse('email_code')
-        self.user_url = reverse('user')
 
         # creation d'un utilisateur
         self.user = User.objects.create_user(
@@ -72,12 +71,6 @@ class TestViews(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_update_password(self):
-        pass
-
-    def test_update_role(self):
-        pass
-
     def test_sign_in_email_with_existing_email(self):
         response = self.client.post(
             self.email_sign_url,
@@ -117,3 +110,88 @@ class TestViews(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestUserViews(TestCase):
+    @classmethod
+    def setUp(self):
+
+        self.client = Client()
+        self.login_url = reverse('login')
+        self.register_url = reverse('register')
+        self.users_url = reverse('users-list')
+        # creation d'un utilisateur
+        self.user = User.objects.create(
+            username='cyrce',
+            email='cyretruly@gmail.com',
+            first_name="john",
+            last_name="does",
+            password='1234password',
+            role_name="ROLE_MANAGER"
+        )
+
+        # create another user
+        self.user2 = User.objects.create(
+            username='cyrce12',
+            email='cyretruly12@gmail.com',
+            first_name="john1",
+            last_name="does1",
+            password='12343password',
+            role_name="ROLE_ANONYME"
+        )
+
+    def test_create_user(self):
+        response = self.client.post(
+            self.users_url,
+            json.dumps({
+                "username": "johndoes",
+                "email": "jonhdoes@yahoo.fr",
+                "password": "casho 15",
+                "first_name": "john",
+                "last_name": "does",
+                "role_name": "ROLE_ANONYME"
+            }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_update_user(self):
+        response = self.client.put(
+            self.users_url+f'{self.user2.id}/',
+            json.dumps({
+                "role_name": "ROLE_COLLECTOR"
+            }),
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_user(self):
+        response = self.client.get(
+            self.users_url+f'{self.user2.id}/',
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_users(self):
+        response = self.client.get(
+            self.users_url,
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['count'] == 2)
+
+    def test_delete_user(self):
+        response = self.client.delete(
+            self.users_url+f'{self.user2.id}/',
+            **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

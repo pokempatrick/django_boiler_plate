@@ -1,13 +1,15 @@
 from rest_framework.generics import GenericAPIView
-from authentification.serializer import RegisterSerilizer, LoginSerilizer
-from rest_framework import response, status, permissions
+from authentification.serializer import RegisterSerilizer, LoginSerilizer, UserSerialiser
+from rest_framework import response, status, permissions, viewsets, filters
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
 import random
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
 from authentification.models import User
+from helpers.permission import HasManagerRole
 from helpers.utils import recover_email, check_token
 
 # Create your views here.
@@ -108,3 +110,43 @@ class CodeVerification(GenericAPIView):
 
             return response.Response({"message": "The user does not exist, try again."}, status=status.HTTP_401_UNAUTHORIZED)
         return response.Response({"message": "invalid code, try again."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    # authentication_classes = ()
+    permission_classes = (permissions.IsAuthenticated,
+                          HasManagerRole)
+
+    filter_backends = (filters.SearchFilter,)
+
+    search_fields = ['id', 'first_name', 'last_name',
+                     'role_name', 'added_by', 'email']
+
+    queryset = User.objects.all()
+    serializer_class = UserSerialiser
+
+    def create(self, request):
+
+        serializer = self.serializer_class(
+            data=request.data,
+            context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save(added_by=self.request.user.first_name)
+            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        user = get_object_or_404(User, id=pk)
+        serializer = self.serializer_class(
+            user,
+            data=request.data,
+            partial=True,
+            context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save(updated_by=self.request.user.first_name)
+            return response.Response(serializer.data, status=status.HTTP_200_OK)
+
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

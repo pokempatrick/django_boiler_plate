@@ -10,6 +10,7 @@ from django.contrib.auth.hashers import make_password
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
+from helpers.constant import ROLES
 
 
 class MyUserManager(UserManager):
@@ -36,12 +37,12 @@ class MyUserManager(UserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, username, email, password=None, **extra_fields):
+    def create_user(self, username, email, password='Bonjour2021', **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         return self._create_user(username, email, password, **extra_fields)
 
-    def create_superuser(self, username, email, password=None, **extra_fields):
+    def create_superuser(self, username, email, password="Bonjour2021", **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -75,9 +76,20 @@ class User(AbstractBaseUser, PermissionsMixin, TrakingModel):
             "unique": _("A user with that username already exists."),
         },
     )
-    # first_name = models.CharField(_("first name"), max_length=150, blank=True)
-    # last_name = models.CharField(_("last name"), max_length=150, blank=True)
+    first_name = models.CharField(
+        _("first name"), max_length=150, blank=False, default="John",)
+    last_name = models.CharField(
+        _("last name"), max_length=150, blank=False, default="Does")
+    role_name = models.CharField(
+        _("role name"), max_length=150, choices=ROLES, default="ROLE_ANONYME", blank=False)
     email = models.EmailField(_("email address"), blank=False, unique=True)
+
+    added_by = models.CharField(
+        max_length=150, blank=True)
+
+    updated_by = models.CharField(
+        max_length=150, blank=True)
+
     is_staff = models.BooleanField(
         _("staff status"),
         default=False,
