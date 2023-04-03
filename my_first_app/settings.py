@@ -40,6 +40,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'todos.pagination.CustomClassPagination',
     'PAGE_SIZE': 5,
+    'DEFAULT_FILTER_BACKEND': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 # Actual directory user files go to
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_yasg',
+    'django_filters',
     'rest_framework',
     'corsheaders',
 
@@ -72,6 +74,7 @@ INSTALLED_APPS = [
     'authentification',
     'budget',
     'members',
+    'reservations',
 ]
 
 MIDDLEWARE = [
@@ -79,7 +82,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

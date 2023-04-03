@@ -48,4 +48,5 @@ urlpatterns = [
     path('api/auth/', include('authentification.urls')),
     path('api/todo/', include('todos.urls')),
     path('api/', include('article.urls')),
+    path('api/', include('reservations.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
