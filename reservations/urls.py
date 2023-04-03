@@ -5,7 +5,8 @@ router = DefaultRouter()
 
 router.register('reservations', views.ReservationViewSet,
                 basename='reservations')
-# urlpatterns = [
-#     path('picture', views.PictureView.as_view(), name='picture'),
-# ]
-urlpatterns = router.urls
+urlpatterns = [
+    path('validation/reservations/<str:pk>/', views.ValidationAPIView.as_view(),
+         name='validation_reservation'),
+]
+urlpatterns += router.urls

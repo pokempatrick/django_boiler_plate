@@ -14,6 +14,8 @@ class TestViews(TestCase):
 
         self.client = Client()
         self.reservation_url = reverse('reservations-list')
+        self.validation_reservation_url = reverse(
+            'validation_reservation', args=["1"])
 
         # creation d'un utilisateur
         self.user = User.objects.create_user(
@@ -90,20 +92,10 @@ class TestViews(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    # def test_validate_reservation(self):
-    #     response = self.client.patch(
-    #         self.reservation_url+f'{self.reservation.id}/validate/',
-    #         json.dumps({
-    #             "statut": "VALIDATE",
-    #         }),
-    #         **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
-    #         content_type="application/json"
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-
-    def test_validate_reservation(self):
+    def test_validation_reservation(self):
+        """ test de la validation de la reservation """
         response = self.client.post(
-            self.reservation_url+f'{self.reservation.id}/validate/',
+            self.validation_reservation_url,
             json.dumps({
                 "statut": True,
                 "description": "It's ok"
@@ -111,7 +103,7 @@ class TestViews(TestCase):
             **{'HTTP_AUTHORIZATION': f'Bearer {self.user.token}'},
             content_type="application/json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_partial_update_reservation_with_bad_input(self):
         response = self.client.patch(
