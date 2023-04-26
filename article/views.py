@@ -4,9 +4,10 @@ from django.shortcuts import get_object_or_404
 from .models import Articles, Picture
 from .serializer import ArticleSerializer, PictureSerializer
 from .permission import IsAuthenficatedOnly, IsArticleOwnerOrReadOnly
+from helpers.view import CreateUpdateMixin
 
 
-class ArticleViewSet(viewsets.ModelViewSet):
+class ArticleViewSet(CreateUpdateMixin, viewsets.ModelViewSet, ):
     permission_classes = (IsAuthenficatedOnly, IsArticleOwnerOrReadOnly)
     # authentication_classes = ()
     filter_backends = (filters.SearchFilter,)
@@ -15,24 +16,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     queryset = Articles.objects.all()
     serializer_class = ArticleSerializer
-
-    def create(self, request):
-
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save(added_by=self.request.user)
-            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, pk=None):
-        article = get_object_or_404(Articles, id=pk)
-        serializer = self.serializer_class(article, data=request.data)
-        if serializer.is_valid():
-            serializer.save(updated_by=self.request.user)
-            return response.Response(serializer.data, status=status.HTTP_200_OK)
-
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    Object = Articles
 
 
 class PictureView(generics.ListCreateAPIView):
