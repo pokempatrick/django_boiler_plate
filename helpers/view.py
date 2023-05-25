@@ -18,7 +18,8 @@ class CreateUpdateMixin:
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
-        object = get_object_or_404(self.Object, id=pk)
+        object = self.get_object()
+        # object = get_object_or_404(self.Object, id=pk)
         serializer = self.serializer_class(object, data=request.data)
         if serializer.is_valid():
             serializer.save(updated_by=self.request.user)
